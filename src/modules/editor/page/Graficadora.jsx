@@ -1,11 +1,59 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import grapesjs from 'grapesjs';
 import 'grapesjs/dist/css/grapes.min.css';
+import { crearComponentes, obtenerComponentes } from '../api/api_componentes';
+import { io } from 'socket.io-client'; 
+import { useParams } from 'react-router-dom';
+
+
+const socket = io('http://localhost:3000');
+
+
 
 const EditorGrapes = () => {
+  const id_proyecto = useParams();
+  
+  const [componentes, setComponentes]= useState([]);
+  const [cargando, setCargando] = useState(true);
+      
+
+    
+  
   const editorRef = useRef(null);
 
+
   useEffect(() => {
+    setCargando(true);
+    console.log("id del proyecto id_board", id_proyecto.id_board);
+    const fetchComponentes = async () => {
+      const response = await obtenerComponentes();
+      console.log("componentes desde la base de datos", response.data);
+      const componentesFiltrados = response.data.filter((c) => c.id_proyecto ===  parseInt(id_proyecto.id_board));
+      setComponentes(componentesFiltrados);
+      setCargando(false);
+    };
+    fetchComponentes();
+  }, []);
+
+  useEffect(() => {
+
+
+     socket.on('connect', () => {
+      console.log('Conectado con ID:', socket.id);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Desconectado:', socket.id);
+    });
+   
+    if (componentes.length === 0 && cargando===true) return;
+
+   
+
+
+
+  
+
     const editor = grapesjs.init({
       container: '#editor',
       fromElement: false,
@@ -62,200 +110,146 @@ const EditorGrapes = () => {
       category: 'Basic'
     });
 
-    editor.Panels.getButton('views', 'open-blocks')?.set('active', true);
-
-// 🔷 VARIABLES GLOBALES
-let componentesGuardados = [];
-const idProyecto = 101; // ID de tu proyecto, lo podés reemplazar dinámicamente
-
-// 🔷 Cargar datos previos si existen
-const cargarComponentesIndividuales = () => {
-  const stored = localStorage.getItem('componentes-individuales');
-  if (stored) {
-    componentesGuardados = JSON.parse(stored);
-    console.log('📂 Componentes cargados del localStorage:', componentesGuardados);
-  }
-};
+    editor.Panels.getButton('views', 'open-blocks')?.set('active', true); 
 
 
-// 🔷 Carga inicial de componentes que ya existen en el editor
-const inicializarComponentesExistentes = () => {
-  const allComponents = editor.getWrapper().components();
-  console.log(`📦 Componentes iniciales en el editor: ${allComponents.length}`);
-};
 
-// 🔷 Escuchar eventos del editor
-const ignorarTipos = ['textnode', 'wrapper', 'body'];
+ const onComponentAdd = (component) => {
+  if (component.get('type') !== 'textnode') {
+    // 🔐 Generar una clase única si no tiene
+    const cid = component.getId(); // ID interno único de GrapesJS
+    const className = `comp-${cid}`;
 
-// 🟢 Agregado
-editor.on('component:add', (component) => {
-  const tipo = component.get('type');
-  if (!ignorarTipos.includes(tipo)) {
-    let attrs = component.get('attributes') || {};
-    if (!attrs.uid) {
-      const uid = 'comp-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-      component.addAttributes({ uid });
-      attrs.uid = uid;
+    // 📌 Agregar clase al componente si no tiene ninguna
+    const existingClasses = component.getClasses();
+    if (!existingClasses.includes(className)) {
+      component.addClass(className);
     }
 
-    const uid = attrs.uid;
+    const tempId = `temp-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    component.addAttributes({ 'data-id-db': tempId });
+    // 📦 Capturar info del componente
+    const nuevoestilo = {
+      [`.${className}`]: component.getStyle() // Estilo con selector CSS
+    };
+    const html = component.toHTML();
+    const tipo = component.get('type');
     const datos = component.toJSON({ shallow: false });
-    datos.attributes = datos.attributes || {};
-    datos.attributes.uid = uid;
 
-    const index = componentesGuardados.findIndex(c => c.datos?.attributes?.uid === uid);
+    const nuevoItem = {
+      id: tempId,
+      id_proyecto: id_proyecto.id_board,
+      tipo,
+      datos,
+      html,
+      style:nuevoestilo,
+      creado_en: new Date().toISOString()
+    };
 
- const style = component.getStyle();
-const html = component.toHTML();
-console.log(style, html);
+    socket.emit('componenteCreado', nuevoItem);
+    console.log('🆕 Componente agregado:', nuevoItem);
+    
 
-const nuevoItem = {
-  id: index !== -1 ? componentesGuardados[index].id : componentesGuardados.length + 1,
-  id_proyecto: idProyecto,
-  tipo,
-  datos,
-  html,        // ✅ HTML del componente
-  style, // ✅ Estilos del componente
-  creado_en: new Date().toISOString()
+
+  }
 };
 
-    if (index !== -1) {
-      componentesGuardados[index] = nuevoItem;
-    } else {
-      componentesGuardados.push(nuevoItem);
-    }
 
-    localStorage.setItem('componentes-individuales', JSON.stringify(componentesGuardados));
-  }
+  socket.on('actualizadoComponenteCreado', (data) => {
+    console.log('Componente creado actualizado en todos lados:', data);
+  
 });
 
-// 🔴 Eliminado
-editor.on('component:remove', (component) => {
+
+
+
+
+
+editor.on('component:styleUpdate', (component) => {
+  const clase = component.getClasses()[0];
+  if (!clase) return;
+
+  const cssRule = editor.CssComposer.getRule(`.${clase}`);
+  const estiloPorClase = cssRule ? cssRule.getStyle() : {};
+  const html = component.toHTML();
   const tipo = component.get('type');
-  if (!ignorarTipos.includes(tipo)) {
-    const attrs = component.get('attributes') || {};
-    const uid = attrs.uid || component.cid || component.id;
+  const datos = component.toJSON({ shallow: false });
 
-    componentesGuardados = componentesGuardados.filter(
-      c => c.datos?.attributes?.uid !== uid
-    );
+  // Recuperar ID del atributo guardado
+  const id = component.getAttributes()['data-id-db'];
+ console.log('ID recuperado:', id);
+  const itemActualizado = {
+    id, // 👈 Este ID ya existe en la base de datos
+    id_proyecto: 1,
+    tipo,
+    datos,
+    html,
+    style: { [`.${clase}`]: estiloPorClase },
+    actualizado_en: new Date().toISOString()
+  };
 
-    localStorage.setItem('componentes-individuales', JSON.stringify(componentesGuardados));
-    console.log('🗑️ Componente eliminado de memoria:', uid);
-  }
+  socket.emit('componenteActualizado', itemActualizado);
 });
 
-// ✏️ Cualquier cambio general (estilo, texto, atributo, etc.)
-const eventosGuardar = [
-  'component:input',
-  'component:update',
-  'component:update:name',
-  'component:style:update',
-  'component:attribute:update',
-  'component:content:update',
+
+
+
+
+
+   const componentesEjemplo = [
+  
 ];
 
-eventosGuardar.forEach(evento => {
-  editor.on(evento, (component) => {
-    const tipo = component.get('type');
-    if (!ignorarTipos.includes(tipo)) {
-      let attrs = component.get('attributes') || {};
-      let uid = attrs.uid;
-      if (!uid) {
-        uid = 'comp-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-        component.addAttributes({ uid });
-        attrs.uid = uid;
-      }
+// ⛔️ Quitar temporalmente el listener
 
-      const datos = component.toJSON({ shallow: false });
-      datos.attributes = datos.attributes || {};
-      datos.attributes.uid = uid;
-
-      const index = componentesGuardados.findIndex(c => c.datos?.attributes?.uid === uid);
-
-       const style = component.getStyle();
-       const html = component.toHTML();
-
-       console.log(style, html);
-
-      const nuevoItem = {
-        id: index !== -1 ? componentesGuardados[index].id : componentesGuardados.length + 1,
-        id_proyecto: idProyecto,
-        tipo,
-        datos,
-        html,        // ✅ HTML del componente
-        style, // ✅ Estilos del componente
-        creado_en: new Date().toISOString()
-      };
-
-      if (index !== -1) {
-        componentesGuardados[index] = nuevoItem;
-      } else {
-        componentesGuardados.push(nuevoItem);
-      }
-
-      localStorage.setItem('componentes-individuales', JSON.stringify(componentesGuardados));
-    }
-  });
-});
-
-// ... Tus otros listeners ...
-
-
-
-// ... El resto de tu código ...
-
-// 🔷 Carga si hay diseño completo guardado
-const stored = localStorage.getItem('grapes-data');
-if (stored) {
-  const parsed = JSON.parse(stored);
-  editor.setComponents(parsed.json);
-  editor.setStyle(parsed.css || '');
-  console.log('✅ Diseño completo cargado desde grapes-data');
-} else {
-  const individuales = localStorage.getItem('componentes-individuales');
-  if (individuales) {
-    const lista = JSON.parse(individuales);
-    const componentesJson = lista.map(item => item.datos);
-    editor.setComponents(componentesJson);
-    console.log('🔁 Editor reconstruido desde componentes individuales');
-  }
-}
-
-// 🔷 Guardado completo opcional
-const saveToLocalStorage = () => {
-  const json = editor.getComponents();
-  const html = editor.getHtml();
-  const css = editor.getCss();
-  const fullData = { html, css, json };
-  localStorage.setItem('grapes-data', JSON.stringify(fullData));
-  console.log('💾 Guardado completo del editor en localStorage');
-};
-
-// 🔷 Inicializar
-cargarComponentesIndividuales();
-editor.on('load', () => {
-  inicializarComponentesExistentes();
-});
-
-
-
-    
-  }, []);
-
-  const clearEditor = () => {
-    if (editorRef.current) {
-      editorRef.current.DomComponents.clear();
-      editorRef.current.CssComposer.clear();
-      localStorage.removeItem('grapes-data');
-      alert('Editor y localStorage limpiados');
-    }
+const componentesDesdeBD = componentes.map(row => {
+  return {
+    ...row,
+    datos: JSON.parse(row.datos),
+    style: JSON.parse(row.style)
   };
+});
+
+console.log('Componentes desde la BD:', componentesDesdeBD);
+editor.off('component:add', onComponentAdd);
+
+componentesDesdeBD.forEach(comp => {
+  editor.addComponents(comp.html); // Renderiza el HTML directamente
+
+  // Convertir el estilo al formato que espera GrapesJS
+  const estilos = Object.entries(comp.style).map(([selector, styleObj]) => ({
+    selectors: [selector.replace(/^\./, '')], // Quitar el punto inicial
+    style: styleObj
+  }));
+
+  editor.addStyle(estilos);
+});
+
+editor.on('component:add', onComponentAdd);
+
+
+
+/*editor.on('component:add', (component) => {
+  const datos = component.toJSON({ shallow: false });
+  console.log('🆕 Componente agregado:', datos);
+});
+
+editor.on('component:styleUpdate', (component) => {
+  const datos = component.getStyle()
+  console.log('🎨 Estilo actualizado:', datos);
+});*/
+
+   
+
+return () => editor.destroy();
+  }, [componentes,cargando]);
+
+ 
 
   return (
     <>
       <div style={{ padding: '10px', background: '#eee' }}>
-        <button onClick={clearEditor}>Limpiar todo</button>
+        <button onClick={()=>crearcompoente()}>Limpiar todo</button>
       </div>
       <div style={{ display: 'flex', height: 'calc(100vh - 50px)' }}>
         <div

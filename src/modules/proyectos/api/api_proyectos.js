@@ -4,7 +4,7 @@ import axios from "axios";
 const ruta = 'http://localhost:3000';
 
 export const obtenerProyectos = async(id) =>
-    await axios.get(`${ruta}/api/usuarios/${id}/proyectos`);
+    await axios.get(`${ruta}/api/proyectos`);
 
 
 export const obtenerProyecto = async(id_proyecto) =>

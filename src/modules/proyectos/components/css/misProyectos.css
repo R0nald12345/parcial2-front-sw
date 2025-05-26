@@ -1,0 +1,199 @@
+/*https://firebasestorage.googleapis.com/v0/b/agendaescolar-cd300.appspot.com/o/pngegg%20(10).png?alt=media&token=3bdacc6e-0033-4200-8fe3-6bfdbe0c05b2*/
+/*https://firebasestorage.googleapis.com/v0/b/agendaescolar-cd300.appspot.com/o/pngegg%20(9).png?alt=media&token=41bb698f-5655-40ce-a060-e92495dbc307*/
+/*https://firebasestorage.googleapis.com/v0/b/agendaescolar-cd300.appspot.com/o/pngegg%20(11).png?alt=media&to*/
+/*https://firebasestorage.googleapis.com/v0/b/agendaescolar-cd300.appspot.com/o/pngegg%20(12).png?alt=media&token=34672c68-b77c-4fe3-bf00-d4523fd73d14*/
+/*https://firebasestorage.googleapis.com/v0/b/agendaescolar-cd300.appspot.com/o/pngegg%20(13).png?alt=media&token=e465729a-f37b-4eeb-a74d-02a63f772d85*/
+/*https://firebasestorage.googleapis.com/v0/b/agendaescolar-cd300.appspot.com/o/pngegg%20(14).png?alt=media&token=8f4e328b-af92-4e3f-9dff-8d9ddf445363*/
+.pagina_proyectos{
+  
+  background: url('https://firebasestorage.googleapis.com/v0/b/agendaescolar-cd300.appspot.com/o/pngegg%20(13).png?alt=media&token=e465729a-f37b-4eeb-a74d-02a63f772d85');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+    width: 100%;
+    height: 92.8vh;
+    display: flex;
+    flex-direction: column;
+
+}
+
+.pagina_proyectos_contenedor_titulo{
+  width: 100%;
+  background: rgb(255, 255, 255);
+  border-radius: 10px;
+  height: 50px;
+  margin-bottom: -20px;
+  display: flex;
+}
+
+.pagina_proyectos_contenedor_titulo h1{
+  margin: auto;
+  font-size: 20px;
+}
+
+.pagina_proyectos_contenedor{
+  width: 80%;
+  height: auto;
+  padding-bottom: 20px;
+  background: rgb(255, 255, 255);
+  margin: 2% auto;
+  border-radius: 10px;
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.151)
+}
+
+.cabezara_proyectos_buscador_agregar{
+  width: 100%;
+  height: 77px;
+  border-bottom: 2px solid rgb(218, 218, 218);
+}
+
+
+.pagina_proyectos_buscador{
+  width: 80%;
+ 
+  margin: auto;
+  padding-top: 22px;
+  
+}
+
+.pagina_proyectos_buscador input{
+    width: 98%;
+    height: 37px;
+    border: 1px solid rgb(211, 211, 211);
+    outline: none;
+    
+    padding-left:10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    background: rgb(245, 245, 245);
+}
+
+.pagina_proyectos_agregar{
+  float: right;
+  padding: 17px;
+  margin-right: 50px;
+}
+
+.pagina_proyectos_agregar button{
+    height: 44px;
+    border: none;
+    width: 150px;
+    background: #000000;
+    color: rgb(255, 255, 255);
+    border-radius: 5px;
+    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.16);
+}
+
+
+.contenedor_cards {
+  width: 87%;
+  height: auto;
+  margin: 0px auto;
+  background: rgb(255, 255, 255);
+  display: flex;
+  flex-wrap: wrap;
+  max-height: 60vh; /* Limita la altura máxima a 300px */
+  overflow-y: auto;  /* Agrega el scroll vertical si el contenido sobrepasa los 300px */
+}
+
+
+@media only screen and (max-width: 768px) {
+  .contenedor_cards {
+    width: 90%; /* Para pantallas de celular, la anchura será del 100% */
+    max-height: 75vh; /* Reduce la altura máxima a 50% del alto de la ventana */
+    overflow-y: auto; /* Scroll vertical si es necesario */
+  }
+}
+
+
+
+.cards{
+  width: 250px;
+  height: 200px;
+  background: #ffb923;
+  margin: 10px;
+  padding: 10px;
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.153);
+  display: flex;
+  flex-direction: column;
+  border-radius: 5px;
+}
+
+
+
+.cards_agregar{
+  width: 250px;
+  height: 200px;
+  background:#ffb923 url('https://firebasestorage.googleapis.com/v0/b/agendaescolar-cd300.appspot.com/o/pngegg%20(5).png?alt=media&token=1087f2a5-d36a-43ba-9b26-ad2cc67134f5');
+  background-size: 120px;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: 10px;
+  padding: 10px;
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.153);
+  display: flex;
+  flex-direction: column;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cards button{
+    margin-top: 5px;
+    height: 33px;
+    width: 30px;
+    border: none;
+    border-radius: 5px;
+    background: rgb(255, 255, 255);
+    color: rgb(81, 81, 81);
+}
+
+.cards_buttons{
+    
+    width: 200px;
+    margin: auto;
+    margin-top: 10px;
+  
+    
+}
+
+.cards_buttons button{
+    margin: 5px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    background: white;
+    padding: 5px;
+}
+
+.add_proyectos{
+    width: 159px;
+    height: 159px;
+    background: rgb(245, 245, 245) url('https://firebasestorage.googleapis.com/v0/b/agendaescolar-cd300.appspot.com/o/pngegg%20(6).png?alt=media&token=7f6ed152-c82a-4f1d-99a8-d5e40872c8d0');
+    background-size: 170px;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin: 10px;
+    padding: 30px;
+    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.153);
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.cards_descripcion{
+    display: flex;
+    flex-direction: column;
+    margin: auto;
+}
+
+.cards_descripcion h1{
+   font-size: 20px;
+   margin: auto;
+   color: rgb(69, 69, 69);
+  
+}
+
+.cards_descripcion p{
+    color: #454545;
+    margin: auto;
+}
+
