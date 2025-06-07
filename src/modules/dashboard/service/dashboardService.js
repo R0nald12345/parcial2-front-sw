@@ -12,14 +12,15 @@ const getAuthHeaders = () => {
 };
 
 export const dashboardService = {
-  async createDashboard(payload) {
+
+  async createProyecto(payload) {
     try {
-      const response = await axios.post(`${API_URL}/dashboard`, payload, {
+      const response = await axios.post(`${API_URL}/proyectos`, payload, {
         headers: getAuthHeaders(),
       });
       return response.data;
     } catch (error) {
-      console.error('Error creating dashboard:', error);
+      console.error('Error creating proyecto:', error);
       throw error;
     }
   },
