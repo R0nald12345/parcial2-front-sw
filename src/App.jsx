@@ -9,8 +9,8 @@ function App() {
     <>
       {/* <h1 className="bg-red-700">Hello</h1> */}
 
-      {/* <AppRoutes/> */}
-      <DashboardPage/>
+      <AppRoutes/>
+      {/* <DashboardPage/> */}
       
     </>
   )
