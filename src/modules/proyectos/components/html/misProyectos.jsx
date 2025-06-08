@@ -96,7 +96,7 @@ export const Misproyectos = () => {
                         
                     </div>
                 {proyectos.length!=0? 
-                    proyectos.map((proyecto)=>(
+                    proyectos.administrador.map((proyecto)=>(
                         <div className="cards" key={proyecto.id}>
                             <div key={proyecto.id} className="cards_descripcion">
                                

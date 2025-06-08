@@ -4,6 +4,7 @@ import 'grapesjs/dist/css/grapes.min.css';
 import { crearComponentes, obtenerComponentes } from '../api/api_componentes';
 import { io } from 'socket.io-client'; 
 import { useParams } from 'react-router-dom';
+import { ChatGeminIA } from '../components/chatGeminIA';
 
 
 const socket = io('http://localhost:3000');
@@ -262,8 +263,12 @@ return () => editor.destroy();
             background: '#f9f9f9'
           }}
         />
+        
+
         <div id="editor" style={{ flex: 1 }} />
       </div>
+      <ChatGeminIA/>
+      
     </>
   );
 };

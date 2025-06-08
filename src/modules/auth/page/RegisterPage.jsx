@@ -1,12 +1,8 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import imagenLogin from "../img/imagenLogin.png";
 
-// import logoUAGRM from "../img/logo_escudo_uagrm.png";
-// import uagrm_logo from "../img/uagrm_logo.png";
-// import logo_facebook from "../img/logo_facebook.png";
-// import logo_whatApps from "../img/logo_whatApps.png";
-// import imgenFondo from "../img/imagenFondo.png";
+
+
 import { useAuth } from "../hooks/useAuth.jsx";
 import { useNavigate } from "react-router-dom";
 
