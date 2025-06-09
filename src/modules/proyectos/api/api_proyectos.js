@@ -9,7 +9,7 @@ const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
     return {
         headers: {
-            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJqdWFuQGVqZW1wbG8uY29tIiwibm9tYnJlIjoiSnVhbiIsImlhdCI6MTc0OTMzNjMxOSwiZXhwIjoxNzQ5Mzc5NTE5fQ.O4UvLENJY5wwKxmdZl-aJHj_TRgmIY9CG4T1efpQ7E4`
+            'Authorization': `Bearer ${token}`,
         }
     };
 };
@@ -28,3 +28,4 @@ export const eliminarProyecto = async(id) =>
 
 export const actualizarProyecto = async (id, datos) =>
     await axios.put(`${ruta}/api/proyectos/${id}`, datos, getAuthHeaders());
+

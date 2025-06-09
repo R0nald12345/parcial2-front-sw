@@ -10,6 +10,9 @@ export const obtenerComponentes = async () =>
 export const crearComponentes = async (datos) =>
     await axios.post(`${ruta}/api/componentes`, datos); 
 
+export const obtenerPaginas = async () =>
+    await axios.get(`${ruta}/api/paginas`);
+
 
 
 
