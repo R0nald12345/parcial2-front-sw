@@ -9,7 +9,7 @@ const PublicRoute = () => {
     return <div>Cargando...</div>;
   }
 
-  return !isAuthenticated ? <Outlet /> : <Navigate to="/dashboard" replace />;
+  return !isAuthenticated ? <Outlet /> : <Navigate to="/dashboard" />;
 };
 
-export default PublicRoute;
+export default PublicRoute;
