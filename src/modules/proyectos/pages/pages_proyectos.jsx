@@ -2,7 +2,7 @@ import { Misproyectos } from "../components/html/misProyectos"
 import React from 'react'
 
 
-const PagesMisProyectos = () => {
+ const PagesMisProyectos = () => {
     return (
         <>
             <Misproyectos/>
@@ -11,5 +11,3 @@ const PagesMisProyectos = () => {
         
     )
 }
-
-export  default PagesMisProyectos

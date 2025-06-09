@@ -19,9 +19,11 @@ export const ContextProyectosProvider = ({children}) => {
     }
 
     const agregarproyecto = async(datos) => {
+        
         const response = await crearProyecto(datos);
-        setProyectos([...proyectos, response.data]);
-        console.log(response.data);
+        console.log('datos desde context_proyectos',response);
+        setProyectos([...proyectos.administrador, response.data]);
+        
     }
 
     const eliminarproyecto = async(id) => {
