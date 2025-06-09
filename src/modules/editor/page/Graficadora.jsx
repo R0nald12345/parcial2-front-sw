@@ -1,17 +1,31 @@
 import React, { useEffect, useRef, useState } from 'react';
+
 import grapesjs from 'grapesjs';
 import 'grapesjs/dist/css/grapes.min.css';
-import { crearComponentes, obtenerComponentes } from '../api/api_componentes';
+import { crearComponentes, obtenerComponentes, obtenerPaginas } from '../api/api_componentes';
 import { io } from 'socket.io-client'; 
 import { useParams } from 'react-router-dom';
 import { ChatGeminIA } from '../components/chatGeminIA';
 
 const socket = io('http://localhost:3000');
 
+const componentesDesdeBDLocal = [
+{
+  "id": "temp-1749347105811-467",
+  "tipo": "wrapper",
+  "datos": "{\"tagName\":\"div\",\"type\":\"wrapper\",\"classes\":[\"wrapper-class\"],\"attributes\":{\"data-id-db\":\"temp-1749347105811-467\"},\"components\":[{\"type\":\"text\",\"tagName\":\"div\",\"components\":[{\"type\":\"textnode\",\"content\":\"Heading 1\"}],\"attributes\":{\"id\":\"iiyp\"}},{\"type\":\"text\",\"tagName\":\"div\",\"components\":[{\"type\":\"textnode\",\"content\":\"Paragraph 1\"}],\"attributes\":{\"id\":\"iwoe\"}},{\"type\":\"text\",\"tagName\":\"div\",\"components\":[{\"type\":\"textnode\",\"content\":\"Heading 2\"}],\"attributes\":{\"id\":\"i98oc\"}},{\"type\":\"text\",\"tagName\":\"div\",\"components\":[{\"type\":\"textnode\",\"content\":\"Paragraph 2\"}],\"attributes\":{\"id\":\"ipsfs\"}},{\"type\":\"text\",\"tagName\":\"div\",\"components\":[{\"type\":\"textnode\",\"content\":\"Heading 3\"}],\"attributes\":{\"id\":\"is7bx\"}},{\"type\":\"text\",\"tagName\":\"div\",\"components\":[{\"type\":\"textnode\",\"content\":\"Paragraph 3\"}],\"attributes\":{\"id\":\"ie5x5\"}},{\"type\":\"text\",\"tagName\":\"div\",\"components\":[{\"type\":\"textnode\",\"content\":\"Centered Text\"}],\"attributes\":{\"id\":\"igkdr\"}}]}",
+  "html": "<div data-id-db=\"temp-1749347105811-467\" class=\"wrapper-class\"> <div id=\"iiyp\">Heading 1</div>  <div id=\"iwoe\">Paragraph 1</div>  <div id=\"i98oc\">Heading 2</div>  <div id=\"ipsfs\">Paragraph 2</div>  <div id=\"is7bx\">Heading 3</div>  <div id=\"ie5x5\">Paragraph 3</div>  <div id=\"igkdr\">Centered Text</div></div>",
+  "style": "{\".wrapper-class\":{\"box-sizing\":\"border-box\",\"margin\":\"0\"},\"#iiyp\":{\"font-size\":\"2em\",\"font-weight\":\"bold\"},\"#iwoe\":{\"font-size\":\"1em\"},\"#i98oc\":{\"font-size\":\"2em\",\"font-weight\":\"bold\"},\"#ipsfs\":{\"font-size\":\"1em\"},\"#is7bx\":{\"font-size\":\"2em\",\"font-weight\":\"bold\"},\"#ie5x5\":{\"font-size\":\"1em\"},\"#igkdr\":{\"text-align\":\"center\"}}",
+  "creado_en": null,
+  "id_proyecto": 1
+}
+];
+
 const EditorGrapes = () => {
   const id_proyecto = useParams();
   
-  const [componentes, setComponentes] = useState([]);
+  const [componentes, setComponentes]= useState([]);
+  const [paginas, setPaginas] = useState([]);
   const [cargando, setCargando] = useState(true);
   
   // 🆕 Estados para el sistema nativo de páginas
@@ -35,7 +49,29 @@ const EditorGrapes = () => {
       );
       setComponentes(componentesFiltrados);
       setCargando(false);
+      
     };
+
+     
+
+      const fetchPaginas = async () => {
+    const response = await obtenerPaginas();
+    console.log("páginas desde la base de datos", response.data);
+    const paginasFiltradas = response.data.filter(
+      (p) => p.id_proyecto === parseInt(id_proyecto.id_board)
+    );
+    console.log("páginas filtradas", paginasFiltradas);
+
+    setPaginas(paginasFiltradas);
+    
+   
+    setCargando(false);
+  };
+
+  fetchPaginas();
+    
+
+    
     fetchComponentes();
   }, []);
 
@@ -221,12 +257,14 @@ const EditorGrapes = () => {
       fromElement: false,
       height: '100vh',
       storageManager: false,
-      
-      // 🆕 Configuración nativa de páginas
-      pageManager: {
-        pages: paginasIniciales
-      },
-      
+
+
+  
+pageManager: {
+    pages: [] // Iniciar sin páginas
+  },
+ 
+
       blockManager: {
         appendTo: '#blocks',
         blocks: [
@@ -278,34 +316,161 @@ const EditorGrapes = () => {
       category: 'Basic'
     });
 
-    // 🔹 Event listeners para páginas nativas
-    editor.on('page', () => {
-      console.log('Evento de página detectado');
-      actualizarEstadoPaginas();
+    editor.Panels.getButton('views', 'open-blocks')?.set('active', true); 
+
+// Después de la inicialización del editor (editor.init)
+const setupPageManager = () => {
+  // Crear contenedor de páginas
+  const pagesContainer = document.createElement('div');
+  pagesContainer.className = 'pages-manager';
+  pagesContainer.style.cssText = `
+    position: fixed;
+    top: 0;
+    right: 0;
+    background: white;
+    padding: 10px;
+    border-left: 1px solid #ccc;
+    z-index: 100;
+  `;
+
+  // Función para actualizar UI de páginas
+  const updatePagesUI = () => {
+    const pages = editor.Pages.getAll();
+    const selected = editor.Pages.getSelected();
+
+    pagesContainer.innerHTML = `
+      <h3>Páginas</h3>
+      <div class="pages-list">
+        ${pages.map(page => `
+          <div class="page-item" style="
+            padding: 5px;
+            margin: 5px 0;
+            cursor: pointer;
+            background: ${selected.id === page.id ? '#e0e0e0' : 'white'}
+          ">
+            ${page.get('name')}
+          </div>
+        `).join('')}
+      </div>
+      <button class="add-page-btn">Nueva Página</button>
+    `;
+
+    // Handler para click en páginas
+    pagesContainer.querySelectorAll('.page-item').forEach((el, i) => {
+      el.onclick = () => editor.Pages.select(pages[i].id);
     });
 
-    // Función para agregar componentes
-    const onComponentAdd = (component) => {
-      if (component.get('type') !== 'textnode') {
-        const cid = component.getId();
-        const className = `comp-${cid}`;
-        component.addClass(className);
+    // Handler para nueva página
+    pagesContainer.querySelector('.add-page-btn').onclick = async () => {
+  const name = prompt('Nombre de la página:');
+  if (name) {
+    // 1. Generar ID único
+    const pageId = `page-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    
+    // 2. Crear datos de la página
+    const pageData = {
+      id: pageId, // ID personalizado
+      name: name,
+      id_proyecto: parseInt(id_proyecto.id_board),
+      components: editor.getComponents(),
+      html: `<div class="${name.toLowerCase()}-page">${name} Content</div>`,
+      css: `.${name.toLowerCase()}-page { color: black }`,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      // 3. Desactivar temporalmente el listener de componentes
+      editor.off('component:add', onComponentAdd);
+
+      // 4. Agregar la página al editor forzando nuestro ID
+      const newPage = editor.Pages.add({
+        id: pageId, // Usar nuestro ID personalizado
+        name: pageData.name,
+        component: pageData.html,
+        // Forzar el ID en los componentes internos
+        attributes: {
+          'data-gjs-id': pageId,
+          'data-page-id': pageId
+        }
+      });
+
+      // 5. Emitir evento después de crear la página
+      socket.emit('paginaCreada', pageData);
+      console.log('Nueva página creada:', pageData);
+
+      // 6. Reactivar el listener de componentes
+      editor.on('component:add', onComponentAdd);
+
+      // 7. Seleccionar la página recién creada
+      editor.Pages.select(pageId);
+
+    } catch (error) {
+      console.error('Error al crear página:', error);
+    }
+  }
+};
+   
+  };
+
+  editor.on('page', updatePagesUI);
+  document.body.appendChild(pagesContainer);
+  updatePagesUI();
+};
+
+// Inicializar el manejador de páginas
+editor.on('load', setupPageManager);
+
+
+
+// Handle page selection
+editor.on('page:select', (page) => {
+  console.log('Selected page:', page.get('name'));
+});
+
+// Save page content before switching
+editor.on('page:before:select', (nextPage, prevPage) => {
+  if (prevPage) {
+    const component = prevPage.getMainComponent();
+    prevPage.set('styles', editor.getCss({ component }));
+    prevPage.set('component', editor.getHtml({ component }));
+  }
+});
+
+ const onComponentAdd = (component) => {
+  if (component.get('type') !== 'textnode') {
+    // 🔐 Generar una clase única si no tiene
+    const currentPage = editor.Pages.getSelected();
+    if (!currentPage) {
+      console.error('No hay página seleccionada');
+      return;
+    }
+
+    const pageId = currentPage.get('id');
+    console.log('ID de página actual:', pageId);
+    const cid = component.getId(); // ID interno único de GrapesJS
+    const className = `comp-${cid}`;
+
+    // 📌 Agregar clase al componente si no tiene ninguna
+    const existingClasses = component.getClasses();
+    if (!existingClasses.includes(className)) {
+      component.addClass(className);
+    }
 
         const tempId = `temp-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
         component.addAttributes({ 'data-id-db': tempId });
 
         const paginaActualId = editor.Pages.getSelected()?.getId();
 
-        const nuevoItem = {
-          id: tempId,
-          id_proyecto: parseInt(id_proyecto.id_board),
-          pagina: paginaActualId, // 🆕 Identificar página
-          tipo: component.get('type'),
-          datos: component.toJSON({ shallow: false }),
-          html: component.toHTML(),
-          style: { [`.${className}`]: component.getStyle() },
-          creado_en: new Date().toISOString()
-        };
+    const nuevoItem = {
+      id: tempId,
+      id_proyecto: parseInt(id_proyecto.id_board),
+      tipo,
+      datos,
+      html,
+      style:nuevoestilo,
+      id_pagina:pageId,
+      creado_en: new Date().toISOString()
+    };
 
         socket.emit('componenteCreado', nuevoItem);
         
@@ -319,53 +484,126 @@ const EditorGrapes = () => {
       const clase = component.getClasses()[0];
       if (!clase) return;
 
-      const cssRule = editor.CssComposer.getRule(`.${clase}`);
-      const estiloPorClase = cssRule ? cssRule.getStyle() : {};
-      const id = component.getAttributes()['data-id-db'];
-      const paginaActualId = editor.Pages.getSelected()?.getId();
+  const cssRule = editor.CssComposer.getRule(`.${clase}`);
+  const estiloPorClase = cssRule ? cssRule.getStyle() : {};
+  const html = component.toHTML();
+  const tipo = component.get('type');
+  const datos = component.toJSON({ shallow: false });
 
-      const itemActualizado = {
-        id,
-        id_proyecto: parseInt(id_proyecto.id_board),
-        pagina: paginaActualId,
-        tipo: component.get('type'),
-        datos: component.toJSON({ shallow: false }),
-        html: component.toHTML(),
-        style: { [`.${clase}`]: estiloPorClase },
-        actualizado_en: new Date().toISOString()
-      };
+  // Recuperar ID del atributo guardado
+  const id = component.getAttributes()['data-id-db'];
+ console.log('ID recuperado:', id);
+  const itemActualizado = {
+    id, 
+    id_proyecto: id_proyecto.id_board,
+    tipo,
+    datos,
+    html,
+    style: { [`.${clase}`]: estiloPorClase },
+    actualizado_en: new Date().toISOString()
+  };
 
-      socket.emit('componenteActualizado', itemActualizado);
-      
-      // Guardar en historial con debounce
-      setTimeout(() => guardarEnHistorial(), 2000);
-    });
+  socket.emit('componenteActualizado', itemActualizado);
+});
 
-    // Cargar componentes existentes en la página correspondiente
-    const componentesDesdeBD = componentes.map(row => ({
-      ...row,
-      datos: JSON.parse(row.datos),
-      style: JSON.parse(row.style)
-    }));
+
+
+
+
+
+   const componentesEjemplo = [
+  
+];
+
+// ⛔️ Quitar temporalmente el listener
+
+const componentesDesdeBD = componentes.map(row => {
+  return {
+    ...row,
+    datos: JSON.parse(row.datos),
+    style: JSON.parse(row.style)
+  };
+});
+
+
 
     editor.off('component:add', onComponentAdd);
 
-    componentesDesdeBD.forEach(comp => {
-      // Cambiar a la página correspondiente antes de agregar componente
-      if (comp.pagina) {
-        const pagina = editor.Pages.get(comp.pagina);
-        if (pagina) {
-          editor.Pages.select(pagina);
-        }
-      }
+// Reemplazar el código actual de parseo de páginas con esto:
+const paginasDesdeBD = paginas.map(pagina => {
+  try {
+    // Validar que components y css existan
+    const componentsStr = pagina.components || '{}';
+    const cssStr = pagina.css || '';
 
-      editor.addComponents(comp.html);
+    // Intentar parsear components con manejo de error
+    let parsedComponents;
+    try {
+      parsedComponents = JSON.parse(componentsStr);
+    } catch (error) {
+      console.error('Error parseando components de página:', error);
+      parsedComponents = {};
+    }
+
+    return {
+      ...pagina,
+      components: parsedComponents,
+      css: cssStr
+    };
+  } catch (error) {
+    console.error('Error procesando página:', pagina.id, error);
+    // Retornar objeto válido en caso de error
+    return {
+      ...pagina,
+      components: {},
+      css: ''
+    };
+  }
+});
+
+console.log('Páginas desde la BD:', paginasDesdeBD);
+
+// Cargar solo las páginas válidas
+paginasDesdeBD.forEach(pagina => {
+  try {
+    editor.Pages.add({
+      id: pagina.id,
+      name: pagina.name,
+      component: pagina.html || `<div>Página ${pagina.name}</div>`,
+      styles: pagina.css
+    });
+  } catch (error) {
+    console.error('Error cargando página en editor:', pagina.id, error);
+  }
+});
+
+// Reemplaza el código de carga de componentes actual con este:
+componentesDesdeBD.forEach(comp => {
+  if (comp.id_pagina) {
+    // Primero seleccionar la página correcta
+    editor.Pages.select(comp.id_pagina);
+    
+    // Obtener la página actual
+    const currentPage = editor.Pages.getSelected();
+    if (currentPage) {
+      // Agregar el componente a la página específica
+      currentPage.getMainComponent().append(comp.html);
+
+      // Agregar los estilos
       const estilos = Object.entries(comp.style).map(([selector, styleObj]) => ({
         selectors: [selector.replace(/^\./, '')],
         style: styleObj
       }));
+
       editor.addStyle(estilos);
-    });
+    }
+  }
+});
+
+// Después de cargar todo, seleccionar la primera página
+if (paginasDesdeBD.length > 0) {
+  editor.Pages.select(paginasDesdeBD[0].id);
+}
 
     editor.on('component:add', onComponentAdd);
 
@@ -378,172 +616,28 @@ const EditorGrapes = () => {
     return () => editor.destroy();
   }, [componentes, cargando]);
 
-  return (
-    <>
-      {/* 🆕 Barra de páginas nativas */}
-      <div style={{ 
-        padding: '10px', 
-        background: '#2c3e50', 
-        color: 'white',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px'
-      }}>
-        <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-          <span style={{ fontWeight: 'bold' }}>Páginas:</span>
-          {paginas.map(pagina => (
-            <div key={pagina.id} style={{ display: 'flex', alignItems: 'center' }}>
-              <button
-                onClick={() => cambiarPagina(pagina.id)}
-                style={{
-                  padding: '5px 15px',
-                  background: paginaActual?.id === pagina.id ? '#3498db' : '#34495e',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px 0 0 4px',
-                  cursor: 'pointer'
-                }}
-              >
-                {pagina.name}
-              </button>
-              {paginas.length > 1 && (
-                <button
-                  onClick={() => eliminarPagina(pagina.id)}
-                  style={{
-                    padding: '5px 8px',
-                    background: '#e74c3c',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '0 4px 4px 0',
-                    cursor: 'pointer',
-                    fontSize: '12px'
-                  }}
-                >
-                  ×
-                </button>
-              )}
-            </div>
-          ))}
-          <button
-            onClick={crearNuevaPagina}
-            style={{
-              padding: '5px 10px',
-              background: '#27ae60',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            + Nueva Página
-          </button>
-        </div>
-
-        {/* 🆕 Controles de historial en memoria */}
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <button
-            onClick={() => setMostrarHistorial(!mostrarHistorial)}
-            style={{
-              padding: '5px 15px',
-              background: '#9b59b6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            {mostrarHistorial ? 'Ocultar' : 'Mostrar'} Historial
-          </button>
-          
-          <button
-            onClick={() => indiceHistorial > 0 && restaurarDesdeHistorial(indiceHistorial - 1)}
-            disabled={indiceHistorial <= 0}
-            style={{
-              padding: '5px 10px',
-              background: indiceHistorial <= 0 ? '#7f8c8d' : '#e74c3c',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: indiceHistorial <= 0 ? 'not-allowed' : 'pointer'
-            }}
-          >
-            ← Deshacer
-          </button>
-          
-          <button
-            onClick={() => indiceHistorial < historial.length - 1 && restaurarDesdeHistorial(indiceHistorial + 1)}
-            disabled={indiceHistorial >= historial.length - 1}
-            style={{
-              padding: '5px 10px',
-              background: indiceHistorial >= historial.length - 1 ? '#7f8c8d' : '#e67e22',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: indiceHistorial >= historial.length - 1 ? 'not-allowed' : 'pointer'
-            }}
-          >
-            Rehacer →
-          </button>
-          
-          <span style={{ fontSize: '12px', opacity: 0.8 }}>
-            {historial.length > 0 ? `${indiceHistorial + 1}/${historial.length}` : 'Sin historial'}
-          </span>
-        </div>
-      </div>
-
-      {/* 🆕 Panel de historial expandible */}
-      {mostrarHistorial && (
-        <div style={{
+return (
+  <>
+    <div style={{ padding: '10px', background: '#eee', display: 'flex', justifyContent: 'space-between' }}>
+      <button onClick={()=>crearcompoente()}>Limpiar todo</button>
+      <div className="pages-manager-container"></div>
+    </div>
+    <div style={{ display: 'flex', height: 'calc(100vh - 50px)' }}>
+      <div
+        id="blocks"
+        style={{
+          width: '250px',
+          borderRight: '1px solid #ccc',
           padding: '10px',
-          background: '#ecf0f1',
-          borderBottom: '1px solid #bdc3c7',
-          maxHeight: '200px',
-          overflowY: 'auto'
-        }}>
-          <h4 style={{ margin: '0 0 10px 0' }}>Historial de Cambios (En Memoria)</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-            {historial.map((item, index) => (
-              <div
-                key={index}
-                onClick={() => restaurarDesdeHistorial(index)}
-                style={{
-                  padding: '8px 12px',
-                  background: index === indiceHistorial ? '#3498db' : 'white',
-                  color: index === indiceHistorial ? 'white' : 'black',
-                  border: '1px solid #bdc3c7',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}
-              >
-                <div style={{ fontWeight: 'bold' }}>{item.descripcion}</div>
-                <div style={{ opacity: 0.8 }}>
-                  {new Date(item.timestamp).toLocaleString()} - {item.paginas.length} página(s)
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Editor principal */}
-      <div style={{ display: 'flex', height: 'calc(100vh - 120px)' }}>
-        <div
-          id="blocks"
-          style={{
-            width: '250px',
-            borderRight: '1px solid #ccc',
-            padding: '10px',
-            overflowY: 'auto',
-            background: '#f9f9f9'
-          }}
-        />
-        <div id="editor" style={{ flex: 1 }} />
-      </div>
-      
-      <ChatGeminIA />
-    </>
-  );
+          overflowY: 'auto',
+          background: '#f9f9f9'
+        }}
+      />
+      <div id="editor" style={{ flex: 1 }} />
+    </div>
+    <ChatGeminIA/>
+  </>
+);
 };
 
 export default EditorGrapes;
