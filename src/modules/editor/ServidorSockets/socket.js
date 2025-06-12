@@ -1,10 +1,10 @@
 // src/socket.js
-
 import { io } from 'socket.io-client';
 
-// Conexión al servidor de sockets (ajusta la URL según tu backend)
-export const socket = io('http://localhost:8080', {
-  transports: ['websocket'], // Evita problemas con polling
+// Usa la variable de entorno para la URL del socket
+const SOCKET_URL = import.meta.env.VITE_API_SOCKET_URL || 'http://localhost:3000';
+
+export const socket = io(SOCKET_URL, {
+  transports: ['websocket'],
   reconnection: true,
 });
-
