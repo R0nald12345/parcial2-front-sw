@@ -25,7 +25,6 @@ const EditorGrapes = () => {
   const id_proyecto = useParams();
   
   const [componentes, setComponentes]= useState([]);
-  const [paginas, setPaginas] = useState([]);
   const [cargando, setCargando] = useState(true);
   
   // 🆕 Estados para el sistema nativo de páginas

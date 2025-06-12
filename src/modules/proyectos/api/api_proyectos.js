@@ -14,15 +14,16 @@ const getAuthHeaders = () => {
     };
 };
 
-export const obtenerProyectos = async(id) =>
+export const obtenerProyectos = async() =>
     await axios.get(`${ruta}/api/proyectos`, getAuthHeaders());
 
 export const obtenerProyecto = async(id_proyecto) =>
     await axios.get(`${ruta}/api/proyectos/${id_proyecto}`, getAuthHeaders());
 
-export const crearProyecto = async(datos)=>{
-    console.log('datos desde api_proyectos',datos);
-    await axios.post(`${ruta}/api/proyectos`, datos, getAuthHeaders());
+
+export const crearProyecto = async(datos) => {
+    console.log('datos desde api_proyectos', datos);
+    return await axios.post(`${ruta}/api/proyectos`, datos, getAuthHeaders());
 }
 
 export const eliminarProyecto = async(id) =>
