@@ -7,9 +7,8 @@ import SidebarDetalles from "./sidebar/SidebarDetalles";
 import Canvas from "./canvas/Canvas";
 import { ShapeAttributes } from "../types/ShapeAttributes.jsx"; // Tipo personalizado para las figuras
 import { useShapes } from "./hooks/useShapes";
-// import {ChatGemini} from "./ChatGemini/ChatGemini.jsx";
 import { socket } from "../ServidorSockets/socket.js";
-import ChatGemini from "./ChatGemini/ChatGemini.jsx";
+import ChatGemini from "./chatGemini/ChatGemini.jsx";
 
 const GraficadoraPrincipal = () => {
   // Usamos el hook que maneja toda la lógica de figuras y selección
