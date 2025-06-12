@@ -2,6 +2,7 @@ import React from 'react';
 import { TfiText } from "react-icons/tfi";
 import { IoTriangleOutline } from "react-icons/io5";
 import { Download, Image as ImageIcon, Shapes, Square, Circle, Star, Minus, Trash2, Copy, RotateCw } from 'lucide-react';
+import { FlutterExporter } from '../../types/FlutterExporter';
 
 // Este componente representa la barra de herramientas inferior del editor.
 // Permite crear figuras, cargar imágenes, y manipular elementos seleccionados.
@@ -18,15 +19,15 @@ const Toolbar = ({
   onAddImage,
 }) => {
 
-  // Exportador a Angular (simulado con AngularExporter)
-  const handleExport = async () => {
-    try {
-      const exporter = new window.AngularExporter('my-angular-design');
-      await exporter.exportToAngular(shapes);
-    } catch (error) {
-      console.error('Error al exportar:', error);
-    }
-  };
+  // Exportador a Flutter (simulado con FlutterExporter)
+const handleExport = async () => {
+  try {
+    const exporter = new FlutterExporter('my_flutter_project');
+    await exporter.exportToFlutter(shapes);
+  } catch (error) {
+    console.error('Error al exportar a Flutter:', error);
+  }
+};
 
   // Cuando el usuario selecciona una imagen desde su disco
   const handleImageSelect = (event) => {
@@ -79,9 +80,9 @@ const Toolbar = ({
         </button>
 
         {/* Exportar diseño */}
-        <button className="export-button text-gray-500 border border-gray-300 hover:bg-white p-1 rounded-2xl" onClick={handleExport} title="Exportar a Angular">
+        <button className="export-button text-gray-500 border border-gray-300 hover:bg-white p-1 rounded-2xl" onClick={handleExport} title="Exportar a Flutter">
           <Download size={18} className="flex justify-center mx-auto"/>
-          <span>Exportar a Angular</span>
+          <span>Exportar a Flutter</span>
         </button>
       </div>
 

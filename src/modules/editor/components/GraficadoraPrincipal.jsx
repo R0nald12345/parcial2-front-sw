@@ -5,8 +5,10 @@ import SidebarGraficadora from "./sidebar/SidebarGraficadora";
 import Toolbar from "./toolbar/Toolbar";
 import SidebarDetalles from "./sidebar/SidebarDetalles";
 import Canvas from "./canvas/Canvas";
-import  {ShapeAttributes}  from "../types/ShapeAttributes.jsx"; // Tipo personalizado para las figuras
+import { ShapeAttributes } from "../types/ShapeAttributes.jsx"; // Tipo personalizado para las figuras
 import { useShapes } from "./hooks/useShapes";
+import ChatGemini from "./ChatGemini/ChatGemini.jsx";
+import { socket } from "../ServidorSockets/socket.js";
 
 const GraficadoraPrincipal = () => {
   // Usamos el hook que maneja toda la lógica de figuras y selección
@@ -64,13 +66,35 @@ const GraficadoraPrincipal = () => {
     reader.readAsDataURL(file);
   };
 
+  // Función para insertar shapes generados por la IA
+  // Si agregas un nuevo grupo de figuras generadas por Gemini:
+const handleGeneratedShapes = (shapesFromAI) => {
+  const newShapes = shapesFromAI.map(attrs => {
+    const clean = { ...attrs };
+
+    // 🚫 Eliminar relaciones de agrupación si existen
+    delete clean.parent;
+    delete clean.isGroup;
+    delete clean.children;
+
+    return new ShapeAttributes(clean);
+  });
+
+  // Detectar fondo y ordenarlo primero
+  const fondo = newShapes.find(s => s.type === 'rectangle' && s.width > 300 && s.height > 300);
+  const otros = newShapes.filter(s => s !== fondo);
+  const ordenados = fondo ? [fondo, ...otros] : newShapes;
+
+  setShapes(prev => [...prev, ...ordenados]);
+};
+
   return (
     <div className="flex flex-col h-screen bg-gray-800">
-      {/* Contenedor principal: 3 columnas */}
+      {/* Cuerpo principal */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Barra lateral izquierda */}
+        {/* Izquierda */}
         <section className="w-[15%] h-full">
-          <SidebarGraficadora 
+          <SidebarGraficadora
             onToolSelect={addShape}
             shapes={shapes}
             selectedId={selectedId}
@@ -83,7 +107,7 @@ const GraficadoraPrincipal = () => {
           />
         </section>
 
-        {/* Área de canvas central */}
+        {/* Canvas */}
         <section className="w-[70%] h-full">
           <Canvas
             shapes={shapes}
@@ -103,7 +127,7 @@ const GraficadoraPrincipal = () => {
           />
         </section>
 
-        {/* Barra lateral derecha: detalles de figura seleccionada */}
+        {/* Detalles */}
         <section className="w-[15%] h-full">
           <SidebarDetalles
             selectedShape={shapes.find(shape => shape.id === selectedId)}
@@ -112,7 +136,7 @@ const GraficadoraPrincipal = () => {
         </section>
       </div>
 
-      {/* Barra de herramientas inferior */}
+      {/* Toolbar abajo */}
       <Toolbar
         shapes={shapes}
         onAddShape={addShape}
@@ -139,6 +163,9 @@ const GraficadoraPrincipal = () => {
         onMoveBackward={() => selectedId && moveBackward(selectedId)}
         onAddImage={handleAddImage}
       />
+
+      {/* Panel del Chat de IA 👇 */}
+      <ChatGemini onGenerateShapes={handleGeneratedShapes} />
     </div>
   );
 };
