@@ -127,6 +127,28 @@ const SidebarGraficadora = ({
     });
   };
 
+  const templates = {
+    login: [
+      { type: "rectangle", x: 0, y: 0, width: 375, height: 812, fill: "#FFFFFF" },
+      { type: "text", x: 50, y: 100, text: "¡Bienvenido!", fontSize: 32, fill: "#333333", fontFamily: "Arial" },
+      { type: "text", x: 50, y: 140, text: "Inicia sesión para continuar", fontSize: 16, fill: "#666666", fontFamily: "Arial" },
+      // ...agrega más shapes para el login
+    ],
+    dashboard: [
+      { type: "rectangle", x: 0, y: 0, width: 375, height: 812, fill: "#F5F5F5" },
+      { type: "rectangle", x: 0, y: 0, width: 375, height: 60, fill: "#1976D2" },
+      { type: "text", x: 20, y: 20, text: "Dashboard", fontSize: 24, fill: "#FFFFFF", fontFamily: "Arial" },
+      // ...agrega más shapes para el dashboard
+    ]
+  };
+
+  const handleInsertTemplate = (templateName) => {
+    if (templates[templateName]) {
+      // Puedes usar onToolSelect o setShapes, según tu lógica
+      templates[templateName].forEach(shape => onToolSelect(shape.type, shape));
+    }
+  };
+
   return (
     <div className="p-4 bg-gris-semi-oscuro h-full flex flex-col">
       <h2 className="text-xl font-bold text-white mb-4">Nombre del Proyecto</h2>
@@ -146,6 +168,25 @@ const SidebarGraficadora = ({
               <span className="text-xs mt-1">{type.slice(0, 4)}</span>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Plantillas */}
+      <div className="mb-4">
+        <h3 className="text-white text-sm font-medium mb-2">Plantillas</h3>
+        <div className="flex space-x-2">
+          <button
+            className="p-2 bg-blue-700 text-white rounded hover:bg-blue-800"
+            onClick={() => handleInsertTemplate('login')}
+          >
+            Login
+          </button>
+          <button
+            className="p-2 bg-blue-700 text-white rounded hover:bg-blue-800"
+            onClick={() => handleInsertTemplate('dashboard')}
+          >
+            Dashboard
+          </button>
         </div>
       </div>
 

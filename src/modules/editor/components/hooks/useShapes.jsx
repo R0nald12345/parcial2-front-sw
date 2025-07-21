@@ -43,6 +43,7 @@ export const useShapes = () => {
                 draggable: true,
                 rotation: attrs.rotation || 0,
                 zIndex: shapes.length,
+                id: `shape-${Date.now()}-${Math.floor(Math.random() * 10000)}` // o usa uuid
             });
         } else if (type === "text") {
             const x = typeof xOrAttrs === 'number' ? xOrAttrs : 100;
@@ -56,6 +57,7 @@ export const useShapes = () => {
                 fontSize: 24,
                 fontFamily: "Arial",
                 zIndex: shapes.length,
+                id: `shape-${Date.now()}-${Math.floor(Math.random() * 10000)}` // o usa uuid
             });
         } else {
             const x = typeof xOrAttrs === 'number' ? xOrAttrs : 100;
@@ -63,6 +65,7 @@ export const useShapes = () => {
             newShape.x = x;
             newShape.y = y;
             newShape.zIndex = shapes.length;
+            newShape.id = `shape-${Date.now()}-${Math.floor(Math.random() * 10000)}`; // o usa uuid
         }
 
         setShapes(prev => [...prev, newShape]);
