@@ -1,10 +1,18 @@
 import React from 'react';
 import { ShapeAttributes } from '../../types/ShapeAttributes'; // Asegúrate de que esto sea JS si ya lo convertiste
-
+import { Trash2, Copy, RotateCw, MoveUp, MoveDown } from 'lucide-react';
 // Este componente muestra los detalles de la figura seleccionada
 // y permite modificar sus atributos desde una barra lateral
 
-const SidebarDetalles = ({ selectedShape, onUpdateShape }) => {
+const SidebarDetalles = ({ 
+    selectedShape, 
+    onUpdateShape,
+    onDeleteShape,
+    onDuplicateShape,
+    onRotateShape,
+    onMoveForward,
+    onMoveBackward,
+}) => {
   // Si no hay figura seleccionada, muestra un mensaje
   if (!selectedShape) {
     return (
@@ -23,6 +31,26 @@ const SidebarDetalles = ({ selectedShape, onUpdateShape }) => {
 
   return (
     <div className="p-4  h-full overflow-y-scroll">
+      <div className="mb-4">
+        <h2 className="text-lg text-white font-semibold mb-2">Acciones</h2>
+        <div className="flex items-center space-x-2">
+            <button className="p-2 rounded hover:bg-gray-100 text-red-500" onClick={onDeleteShape} title="Eliminar">
+                <Trash2 size={20} />
+            </button>
+            <button className="p-2 rounded hover:bg-gray-100" onClick={onDuplicateShape} title="Duplicar">
+                <Copy size={20} />
+            </button>
+            <button className="p-2 rounded hover:bg-gray-100" onClick={onRotateShape} title="Rotar">
+                <RotateCw size={20} />
+            </button>
+            <button className="p-2 rounded hover:bg-gray-100 text-white hover:text-black" onClick={onMoveForward} title="Traer al frente">
+                <MoveUp size={20} />
+            </button>
+            <button className="p-2 rounded hover:bg-gray-100 text-white hover:text-black" onClick={onMoveBackward} title="Enviar al fondo">
+                <MoveDown size={20} />
+            </button>
+        </div>
+      </div>
       {/* Solo para figuras de texto */}
       {selectedShape.type === 'text' && (
         <>

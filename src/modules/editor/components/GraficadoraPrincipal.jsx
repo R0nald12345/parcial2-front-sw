@@ -68,32 +68,36 @@ const GraficadoraPrincipal = () => {
 
   // Función para insertar shapes generados por la IA
   // Si agregas un nuevo grupo de figuras generadas por Gemini:
-const handleGeneratedShapes = (shapesFromAI) => {
-  const newShapes = shapesFromAI.map(attrs => {
-    const clean = { ...attrs };
+  const handleGeneratedShapes = (shapesFromAI) => {
+    const newShapes = shapesFromAI.map(attrs => {
+      const clean = { ...attrs };
 
-    // 🚫 Eliminar relaciones de agrupación si existen
-    delete clean.parent;
-    delete clean.isGroup;
-    delete clean.children;
+      // 🚫 Eliminar relaciones de agrupación si existen
+      delete clean.parent;
+      delete clean.isGroup;
+      delete clean.children;
 
-    return new ShapeAttributes(clean);
-  });
+      return new ShapeAttributes(clean);
+    });
 
-  // Detectar fondo y ordenarlo primero
-  const fondo = newShapes.find(s => s.type === 'rectangle' && s.width > 300 && s.height > 300);
-  const otros = newShapes.filter(s => s !== fondo);
-  const ordenados = fondo ? [fondo, ...otros] : newShapes;
+    // Detectar fondo y ordenarlo primero
+    const fondo = newShapes.find(s => s.type === 'rectangle' && s.width > 300 && s.height > 300);
+    const otros = newShapes.filter(s => s !== fondo);
+    const ordenados = fondo ? [fondo, ...otros] : newShapes;
 
-  setShapes(prev => [...prev, ...ordenados]);
-};
+    setShapes(prev => [...prev, ...ordenados]);
+  };
+
+
 
   return (
     <div className="flex flex-col h-screen bg-gray-800">
       {/* Cuerpo principal */}
       <div className="flex flex-1 overflow-hidden">
+
         {/* Izquierda */}
         <section className="w-[15%] h-full">
+
           <SidebarGraficadora
             onToolSelect={addShape}
             shapes={shapes}
@@ -104,68 +108,79 @@ const handleGeneratedShapes = (shapesFromAI) => {
             onMoveBackward={moveBackward}
             onGroupShapes={groupShapes}
             onUngroupShapes={ungroupShapes}
+            onAddImage={handleAddImage}
           />
+
         </section>
 
-        {/* Canvas */}
+        {/* Canvas PIZARRA */}
         <section className="w-[70%] h-full">
-          <Canvas
-            shapes={shapes}
-            selectedId={selectedId}
-            selectedIds={selectedIds}
-            isTextMode={isTextMode}
-            onSelectShape={selectShape}
-            onDeselectShape={deselectShape}
-            onUpdateShape={updateShape}
-            onAddShape={addShape}
-            onDeleteShape={deleteShape}
-            onMoveForward={moveForward}
-            onMoveBackward={moveBackward}
-            onGroupShapes={groupShapes}
-            onUngroupShapes={ungroupShapes}
-            onCanvasClick={handleCanvasClick}
-          />
+          <div className="w-full h-[80%]">
+            <Canvas
+              shapes={shapes}
+              selectedId={selectedId}
+              selectedIds={selectedIds}
+              isTextMode={isTextMode}
+              onSelectShape={selectShape}
+              onDeselectShape={deselectShape}
+              onUpdateShape={updateShape}
+              onAddShape={addShape}
+              onDeleteShape={deleteShape}
+              onMoveForward={moveForward}
+              onMoveBackward={moveBackward}
+              onGroupShapes={groupShapes}
+              onUngroupShapes={ungroupShapes}
+              onCanvasClick={handleCanvasClick}
+            />
+
+
+          </div>
+
+
+          <div className="w-full h-[80%]">
+            <ChatGemini onGenerateShapes={handleGeneratedShapes} />
+
+
+          </div>
+
+
         </section>
+
 
         {/* Detalles */}
         <section className="w-[15%] h-full">
+
           <SidebarDetalles
             selectedShape={shapes.find(shape => shape.id === selectedId)}
             onUpdateShape={updateShape}
+            onDeleteShape={() => selectedId && deleteShape(selectedId)}
+            onDuplicateShape={() => {
+              if (selectedId) {
+                const shapeToCopy = shapes.find(shape => shape.id === selectedId);
+                if (shapeToCopy) {
+                  addShape(shapeToCopy.type);
+                }
+              }
+            }}
+            onRotateShape={() => {
+              if (selectedId) {
+                const shape = shapes.find(shape => shape.id === selectedId);
+                if (shape) {
+                  updateShape(selectedId, { rotation: (shape.rotation + 90) % 360 });
+                }
+              }
+            }}
+            onMoveForward={() => selectedId && moveForward(selectedId)}
+            onMoveBackward={() => selectedId && moveBackward(selectedId)}
           />
+
         </section>
+
+
       </div>
 
-      {/* Toolbar abajo */}
-      <Toolbar
-        shapes={shapes}
-        onAddShape={addShape}
-        selectedId={selectedId}
-        selectedIds={selectedIds}
-        onDeleteShape={() => selectedId && deleteShape(selectedId)}
-        onDuplicateShape={() => {
-          if (selectedId) {
-            const shapeToCopy = shapes.find(shape => shape.id === selectedId);
-            if (shapeToCopy) {
-              addShape(shapeToCopy.type);
-            }
-          }
-        }}
-        onRotateShape={() => {
-          if (selectedId) {
-            const shape = shapes.find(shape => shape.id === selectedId);
-            if (shape) {
-              updateShape(selectedId, { rotation: (shape.rotation + 90) % 360 });
-            }
-          }
-        }}
-        onMoveForward={() => selectedId && moveForward(selectedId)}
-        onMoveBackward={() => selectedId && moveBackward(selectedId)}
-        onAddImage={handleAddImage}
-      />
 
-      {/* Panel del Chat de IA 👇 */}
-      <ChatGemini onGenerateShapes={handleGeneratedShapes} />
+
     </div>
   );
 };

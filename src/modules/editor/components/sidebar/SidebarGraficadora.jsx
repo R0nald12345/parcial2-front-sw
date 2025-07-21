@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import { 
   ChevronDown, ChevronRight, Square, Circle, Star, Minus,
-  MoveUp, MoveDown, Layers, Trash2, Group, Ungroup 
+  MoveUp, MoveDown, Layers, Trash2, Group, Ungroup, Download, Image as ImageIcon
 } from 'lucide-react';
 import { IoTriangleOutline } from "react-icons/io5";
 import { TfiText } from "react-icons/tfi";
+import { FlutterExporter } from '../../types/FlutterExporter';
 
 // Este componente representa la barra lateral izquierda del editor
 // Aquí se encuentran las herramientas, capas, y acciones para agrupar, eliminar o reordenar figuras
@@ -18,11 +19,28 @@ const SidebarGraficadora = ({
   onMoveForward,
   onMoveBackward,
   onGroupShapes,
-  onUngroupShapes
+  onUngroupShapes,
+  onAddImage
 }) => {
   const [expandedGroups, setExpandedGroups] = useState(new Set());
   const [selectedShapeIds, setSelectedShapeIds] = useState([]);
 
+
+  const handleExport = async () => {
+    try {
+      const exporter = new FlutterExporter('my_flutter_project');
+      await exporter.exportToFlutter(shapes);
+    } catch (error) {
+      console.error('Error al exportar a Flutter:', error);
+    }
+  };
+
+  const handleImageSelect = (event) => {
+    const file = event.target.files?.[0];
+    if (file && onAddImage) {
+      onAddImage(file);
+    }
+  };
   // Alternar si un grupo está expandido (mostrar sus hijos o no)
   const toggleGroup = (groupId) => {
     const newExpandedGroups = new Set(expandedGroups);
@@ -157,6 +175,25 @@ const SidebarGraficadora = ({
           title="Desagrupar"
         >
           <Ungroup size={16} /><span className="ml-1">Desagrupar</span>
+        </button>
+      </div>
+      <div className="flex items-center space-x-2">
+        {/* Subir imagen */}
+        <div className="relative">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageSelect}
+            className="hidden"
+            id="image-upload"
+          />
+          <label htmlFor="image-upload" className="p-2 rounded text-white hover:bg-gray-100 hover:text-black cursor-pointer flex items-center justify-center" title="Añadir Imagen">
+            <ImageIcon size={20} />
+          </label>
+        </div>
+        <button className="export-button text-gray-500 border border-gray-300 hover:bg-white p-1 rounded-2xl" onClick={handleExport} title="Exportar a Flutter">
+          <Download size={18} className="flex justify-center mx-auto"/>
+          <span>Exportar a Flutter</span>
         </button>
       </div>
 
