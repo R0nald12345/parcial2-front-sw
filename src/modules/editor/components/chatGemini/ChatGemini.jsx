@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 
 const ChatGemini = ({ onGenerateShapes }) => {
     const [userPrompt, setUserPrompt] = useState('');
     const [image, setImage] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const recognitionRef = useRef(null);
 
     // 🔹 Prompt base que "enseña" a Gemini cómo responder
     const basePrompt = `Dibuja una interfaz para Flutter. Devuélvela en un arreglo JSON.
@@ -97,15 +99,69 @@ Ejemplo:
         }
     };
 
+    // 🔹 Función para manejar el micrófono y la transcripción
+    const handleMicClick = () => {
+        // Si ya está grabando, detener
+        if (isRecording) {
+            recognitionRef.current && recognitionRef.current.stop();
+            setIsRecording(false);
+            return;
+        }
+
+        // Compatibilidad con SpeechRecognition
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert('La API de reconocimiento de voz no está soportada en este navegador. Usa Chrome o Edge.');
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-ES'; // Puedes cambiar el idioma si lo deseas
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+            setIsRecording(true);
+        };
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            setUserPrompt(prev => prev + (prev ? ' ' : '') + transcript);
+        };
+        recognition.onerror = (event) => {
+            alert('Error en el reconocimiento de voz: ' + event.error);
+            setIsRecording(false);
+        };
+        recognition.onend = () => {
+            setIsRecording(false);
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+    };
+
     return (
         <div className="p-4 bg-gray-700 text-white">
-            <textarea
-                rows={4}
-                className="w-full text-black mb-2"
-                placeholder="Describe tu diseño..."
-                value={userPrompt}
-                onChange={(e) => setUserPrompt(e.target.value)}
-            />
+            <div className="flex items-center mb-2 gap-2">
+                <textarea
+                    rows={4}
+                    className="w-full text-black"
+                    placeholder="Describe tu diseño..."
+                    value={userPrompt}
+                    onChange={(e) => setUserPrompt(e.target.value)}
+                />
+                <button
+                    type="button"
+                    onClick={handleMicClick}
+                    className={`p-2 rounded-full border-2 ${isRecording ? 'bg-red-500 border-red-700 animate-pulse' : 'bg-gray-200 border-gray-400'} text-black flex items-center justify-center`}
+                    title={isRecording ? 'Detener grabación' : 'Hablar'}
+                >
+                    {/* Icono de micrófono SVG */}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75v2.25m0 0h3m-3 0H9m6-2.25a6 6 0 01-12 0m12 0V12a6 6 0 00-12 0v4.5" />
+                        <rect x="9" y="3" width="6" height="10" rx="3" fill={isRecording ? '#ef4444' : '#a3a3a3'} />
+                    </svg>
+                </button>
+            </div>
             <input type="file" accept="image/*" onChange={handleImageUpload} className="mb-2" />
             <button
                 onClick={sendPrompt}

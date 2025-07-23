@@ -30,20 +30,13 @@ export const useShapes = () => {
     const addShape = useCallback((type, xOrAttrs, y = 100) => {
         let newShape;
 
-        if (typeof xOrAttrs === 'object' && xOrAttrs !== null && type === "image") {
-            const attrs = xOrAttrs;
+        if (typeof xOrAttrs === 'object' && xOrAttrs !== null) {
+            // Usa todos los atributos del objeto, pero fuerza un id único y zIndex correcto
             newShape = new ShapeAttributes({
-                type: 'image',
-                x: attrs.x || 100,
-                y: attrs.y || 100,
-                width: attrs.width || 100,
-                height: attrs.height || 100,
-                image: attrs.image,
-                src: attrs.src,
-                draggable: true,
-                rotation: attrs.rotation || 0,
+                ...xOrAttrs,
+                type,
+                id: `shape-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
                 zIndex: shapes.length,
-                id: `shape-${Date.now()}-${Math.floor(Math.random() * 10000)}` // o usa uuid
             });
         } else if (type === "text") {
             const x = typeof xOrAttrs === 'number' ? xOrAttrs : 100;
@@ -57,7 +50,7 @@ export const useShapes = () => {
                 fontSize: 24,
                 fontFamily: "Arial",
                 zIndex: shapes.length,
-                id: `shape-${Date.now()}-${Math.floor(Math.random() * 10000)}` // o usa uuid
+                id: `shape-${Date.now()}-${Math.floor(Math.random() * 10000)}`
             });
         } else {
             const x = typeof xOrAttrs === 'number' ? xOrAttrs : 100;
@@ -65,14 +58,12 @@ export const useShapes = () => {
             newShape.x = x;
             newShape.y = y;
             newShape.zIndex = shapes.length;
-            newShape.id = `shape-${Date.now()}-${Math.floor(Math.random() * 10000)}`; // o usa uuid
+            newShape.id = `shape-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         }
 
         setShapes(prev => [...prev, newShape]);
         setSelectedId(newShape.id);
         setSelectedIds([newShape.id]);
-
-        // 🔌 Emitir al servidor la nueva figura
         socket.emit("new_shape", newShape);
     }, [shapes]);
 

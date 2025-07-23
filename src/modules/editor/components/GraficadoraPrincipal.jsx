@@ -7,7 +7,6 @@ import SidebarDetalles from "./sidebar/SidebarDetalles";
 import Canvas from "./canvas/Canvas";
 import { ShapeAttributes } from "../types/ShapeAttributes.jsx"; // Tipo personalizado para las figuras
 import { useShapes } from "./hooks/useShapes";
-import { socket } from "../ServidorSockets/socket.js";
 import ChatGemini from "./chatGemini/ChatGemini.jsx";
 
 const GraficadoraPrincipal = () => {
@@ -77,6 +76,7 @@ const GraficadoraPrincipal = () => {
       delete clean.isGroup;
       delete clean.children;
 
+      clean.id = `shape-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
       return new ShapeAttributes(clean);
     });
 
@@ -85,7 +85,10 @@ const GraficadoraPrincipal = () => {
     const otros = newShapes.filter(s => s !== fondo);
     const ordenados = fondo ? [fondo, ...otros] : newShapes;
 
-    setShapes(prev => [...prev, ...ordenados]);
+    // Agregar cada figura usando addShape (esto emite el socket)
+    ordenados.forEach(shapeAttrs => {
+      addShape(shapeAttrs.type, shapeAttrs);
+    });
   };
 
 

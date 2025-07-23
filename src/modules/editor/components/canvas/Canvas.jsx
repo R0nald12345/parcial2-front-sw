@@ -63,7 +63,12 @@ const Canvas = ({
     onDeselectShape,
     onCanvasClick,
     onSelectShapesInArea: (x1, y1, x2, y2) => {
+      const isBackground = (shape) =>
+        shape.type === "rectangle" &&
+        shape.x === 0 && shape.y === 0 &&
+        shape.fill && shape.fill.toUpperCase() === "#FFFFFF";
       const selectedShapes = shapes.filter(shape => {
+        if (isBackground(shape)) return false;
         const shapeX = shape.x;
         const shapeY = shape.y;
         const shapeWidth = shape.width;
@@ -76,7 +81,6 @@ const Canvas = ({
           shapeY + shapeHeight <= Math.max(y1, y2)
         );
       });
-
       selectedShapes.forEach(shape => onSelectShape(shape.id, true));
     }
   });
@@ -87,6 +91,9 @@ const Canvas = ({
     handleContextMenu,
     closeContextMenu
   } = useContextMenu();
+
+  const MIN_SCALE = 1;
+  const MAX_SCALE = 5;
 
   // Manejador de zoom con la rueda del mouse
   const handleWheel = (e) => {
@@ -104,16 +111,43 @@ const Canvas = ({
       y: pointer.y / oldScale - stage.y() / oldScale
     };
 
-    const newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
+    let newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
+    // Limita el zoom
+    newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+
     const newPointer = stage.getPointerPosition();
     if (!newPointer) return;
 
-    setScale(newScale);
-    setPosition({
+    const containerWidth = stageSize.width; // o el tamaño real del contenedor visible
+    const containerHeight = stageSize.height;
+
+    let newPos = {
       x: -(mousePointTo.x - newPointer.x / newScale) * newScale,
       y: -(mousePointTo.y - newPointer.y / newScale) * newScale
-    });
+    };
+
+    newPos = clampPosition(newPos, newScale, containerWidth, containerHeight, stageSize.width, stageSize.height);
+
+    setScale(newScale);
+    setPosition(newPos);
   };
+
+  function clampPosition(pos, scale, containerWidth, containerHeight, stageWidth, stageHeight) {
+    // El área visible del canvas
+    const viewWidth = containerWidth / scale;
+    const viewHeight = containerHeight / scale;
+
+    // Limita para que no se salga del área de trabajo
+    const minX = Math.min(0, containerWidth - stageWidth * scale);
+    const minY = Math.min(0, containerHeight - stageHeight * scale);
+    const maxX = 0;
+    const maxY = 0;
+
+    return {
+      x: Math.max(minX, Math.min(maxX, pos.x)),
+      y: Math.max(minY, Math.min(maxY, pos.y))
+    };
+  }
 
   return (
     <div className="relative w-full h-full overflow-auto">

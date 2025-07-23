@@ -22,6 +22,8 @@ const ShapeRenderer = ({
 
   // Al hacer clic sobre una figura, se selecciona
   const handleClick = (e) => {
+    const isBackground = shape.type === "rectangle" && shape.x === 0 && shape.y === 0 && shape.fill && shape.fill.toUpperCase() === "#FFFFFF";
+    if (isBackground) return;
     onSelect(shape.id, e.evt.ctrlKey || e.evt.shiftKey); // Soporte multiselección
   };
 
