@@ -1,5 +1,5 @@
 // ShapeRenderer.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Rect, Circle, Star, Line, Text, Image, Group } from "react-konva";
 import Konva from "konva";
 
@@ -120,6 +120,19 @@ const ShapeRenderer = ({
     });
   };
 
+  // --- NUEVO: Manejo de imagen base64 recibida por sockets ---
+  const [imgObj, setImgObj] = useState(null);
+
+  useEffect(() => {
+    if (shape.type === "image" && shape.src && !imgObj) {
+      const img = new window.Image();
+      img.src = shape.src;
+      img.onload = () => setImgObj(img);
+    }
+    // Si shape cambia, reinicia la imagen
+    // eslint-disable-next-line
+  }, [shape.src]);
+
   // Render de figuras según el tipo
   switch (shape.type) {
     case "group":
@@ -194,7 +207,7 @@ const ShapeRenderer = ({
       return (
         <Image
           {...shapeProps}
-          image={shape.image}
+          image={shape.image || imgObj}
           width={shape.width}
           height={shape.height}
         />

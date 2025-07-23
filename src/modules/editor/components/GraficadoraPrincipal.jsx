@@ -48,15 +48,14 @@ const GraficadoraPrincipal = () => {
           y: 100,
           width: img.width,
           height: img.height,
-          image: img,
-          src: e.target?.result,
+          src: e.target?.result, // ✅ Solo esto
           draggable: true,
           rotation: 0,
           zIndex: shapes.length,
         });
 
         // Agregamos la figura a la lista
-        setShapes([...shapes, imageShape]);
+        addShape('image', imageShape);
         setSelectedId(imageShape.id);
         setSelectedIds([imageShape.id]);
       };

@@ -1,50 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { authService } from "../service/authService";
+import { useAuthStore } from '../store/authStore';
 
-const AuthContext = createContext();
+// Hook para acceder a los datos de auth desde Zustand
+export const useAuth = () => {
+  const user = useAuthStore(state => state.user);
+  const token = useAuthStore(state => state.token);
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const setAuth = useAuthStore(state => state.setAuth);
+  const logout = useAuthStore(state => state.logout);
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); 
-  const isAuthenticated = !!user;
-
-  useEffect(() => {
-    // Cargar datos del localStorage al montar el AuthProvider
-    const token = localStorage.getItem("token");
-    const userName = localStorage.getItem("userName");
-
-    if (token && userName) {
-      setUser({ nombre: userName, tokenSession: token }); // Inicializa el estado del usuario
-    }
-    setIsLoading(false); // Indica que la carga inicial ha terminado
-  }, []);
-
-  const login = async (payload) => {
-    setIsLoading(true);
-    try {
-      const data = await authService.login(payload);
-      localStorage.setItem("token", data.user.tokenSession);
-      localStorage.setItem("userName", data.user.nombre);
-      setUser(data.user);
-      setIsLoading(false);
-      return data;
-    } catch (error) {
-      setIsLoading(false);
-      throw error;
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userName");
-    setUser(null);
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return { user, token, isAuthenticated, setAuth, logout };
 };
-
-export const useAuth = () => useContext(AuthContext);

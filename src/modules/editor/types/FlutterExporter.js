@@ -31,8 +31,21 @@ export class FlutterExporter {
   }
 
   getScreensFromShapes(shapes) {
-    const backgrounds = shapes.filter(s => s.type === 'rectangle' && s.fill?.toLowerCase().includes('#d9d9d9') || s.fill === '#D9D9D9');
+    // Si hay algún rectángulo grande, lo toma como fondo
+    const backgrounds = shapes.filter(s =>
+      s.type === 'rectangle' &&
+      (s.width > 300 && s.height > 300) // Puedes ajustar el tamaño mínimo
+    );
     const screens = [];
+
+    if (backgrounds.length === 0) {
+      // Si no hay fondo, exporta todo como una sola pantalla
+      screens.push({
+        background: { x: 0, y: 0, width: 375, height: 812, fill: "#F3F6FD" }, // Fondo por defecto
+        children: shapes
+      });
+      return screens;
+    }
 
     backgrounds.forEach(bg => {
       const children = shapes.filter(s => s.id !== bg.id &&
@@ -91,7 +104,8 @@ class ${widgetName} extends StatelessWidget {
       left: shape.x,
       top: shape.y,
       color: shape.fill || '#ffffff',
-      border: shape.strokeWidth > 0 ? `Border.all(color: Color(0xFF${shape.stroke?.replace('#', '') || '000000'}), width: ${shape.strokeWidth})` : null,
+      // CORREGIDO: border como argumento nombrado
+      border: shape.strokeWidth > 0 ? `border: Border.all(color: Color(0xFF${shape.stroke?.replace('#', '') || '000000'}), width: ${shape.strokeWidth})` : null,
       rotation: shape.rotation
     };
 

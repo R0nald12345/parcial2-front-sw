@@ -8,11 +8,10 @@ export const authService = {
     
     async login(payload){
         try {
-            const response = await axios.post(`${API_URL}/login`, payload);
-            return response.data;
+            const response = await axios.post(`${API_URL}/auth/login`, payload);
+            return response.data; // { message, token, usuario }
         } catch (error) {
-            console.error('Error during login:', error);
-            throw error;
+            throw error.response?.data?.message || "Error de red";
         }
     },
 

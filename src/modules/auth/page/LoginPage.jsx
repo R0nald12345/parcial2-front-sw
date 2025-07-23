@@ -1,13 +1,13 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-
-import { useAuth } from "../hooks/useAuth.jsx";
 import { useNavigate } from "react-router-dom";
-
+import Swal from "sweetalert2";
+import { authService } from "../service/authService";
+import { useAuthStore } from "../store/authStore";
 
 const LoginPage = () => {
-  const { login, isLoading } = useAuth();
   const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const {
     register,
@@ -18,12 +18,25 @@ const LoginPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      await login(data); // Tu contexto espera un objeto { email, password }
+      const res = await authService.login(data);
+      setAuth({ user: res.usuario, token: res.token });
 
-      navigate("/dashboard"); // Redirige al dashboard si el login es exitoso
+      Swal.fire({
+        icon: "success",
+        title: "¡Login exitoso!",
+        text: res.message,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+
+      navigate("/dashboard");
     } catch (error) {
-      // El error ya es mostrado por SweetAlert, pero puedes mostrar un error general si quieres
-      setError("root", { message: "Credenciales incorrectas o error de red." });
+      Swal.fire({
+        icon: "error",
+        title: "Error de login",
+        text: error || "Credenciales incorrectas o error de red.",
+      });
+      setError("root", { message: error || "Credenciales incorrectas o error de red." });
     }
   };
 
@@ -85,9 +98,8 @@ const LoginPage = () => {
                   <button
                     type="submit"
                     className="font-mplus-bold bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-800 w-full cursor-pointer"
-                    disabled={isLoading}
                   >
-                    {isLoading ? 'Cargando...' : 'Ingresar'}
+                    Ingresar
                   </button>
                   {/* Puedes implementar el registro en otro formulario o modal */}
                   <button
