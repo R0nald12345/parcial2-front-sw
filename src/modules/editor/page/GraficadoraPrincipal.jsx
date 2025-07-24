@@ -1,13 +1,13 @@
 // GraficadoraPrincipal.jsx
 import React from "react";
 // import { useShapes } from "../hooks/useShapes"; // Hook principal para gestionar figuras (y donde deben estar los sockets)
-import SidebarGraficadora from "./sidebar/SidebarGraficadora";
-import Toolbar from "./toolbar/Toolbar";
-import SidebarDetalles from "./sidebar/SidebarDetalles";
-import Canvas from "./canvas/Canvas";
+import SidebarGraficadora from "../components/sidebar/SidebarGraficadora.jsx";
+import Toolbar from "../components/toolbar/Toolbar.jsx";
+import SidebarDetalles from "../components/sidebar/SidebarDetalles.jsx";
+import Canvas from "../components/canvas/Canvas.jsx";
 import { ShapeAttributes } from "../types/ShapeAttributes.jsx"; // Tipo personalizado para las figuras
-import { useShapes } from "./hooks/useShapes";
-import ChatGemini from "./chatGemini/ChatGemini.jsx";
+import { useShapes } from "../components/hooks/useShapes.jsx";
+import ChatGemini from "../components/chatGemini/ChatGemini.jsx";
 
 const GraficadoraPrincipal = () => {
   // Usamos el hook que maneja toda la lógica de figuras y selección

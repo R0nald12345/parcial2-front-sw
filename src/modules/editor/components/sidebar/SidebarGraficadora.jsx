@@ -294,7 +294,7 @@ const SidebarGraficadora = ({
   };
 
   return (
-    <div className="p-4 bg-gris-semi-oscuro h-full flex flex-col">
+    <div className="p-4 bg-gris-semi-oscuro h-full flex flex-col  ">
       <h2 className="text-xl font-bold text-white mb-4">Nombre del Proyecto</h2>
 
       {/* Herramientas de dibujo */}

@@ -10,6 +10,7 @@ const LoadingFallback = () => <div>Cargando....</div>
 // Carga diferida de los módulos
 const AuthRoutes = lazy(() => import('../auth/routes/RouterAuth'))
 const DashboardRoutes = lazy(() => import('../dashboard/route/index'));
+const EditorRoutes = lazy(() => import('../editor/page/GraficadoraPrincipal'));
 
 
 const AppRoutes = () => {
@@ -28,6 +29,12 @@ const AppRoutes = () => {
                     <Route element={<ProtectedRoute />}>
                     
                         <Route path="/dashboard" element={<DashboardRoutes/>} /> 
+                        {/* <Route path="/editor/*" element={<EditorRoutes />} />  */}
+                    </Route>
+
+                    <Route element={<ProtectedRoute />}>
+                    
+                        <Route path="/graficadora" element={<EditorRoutes/>} /> 
                         {/* <Route path="/editor/*" element={<EditorRoutes />} />  */}
                     </Route>
 
