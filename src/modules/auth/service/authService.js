@@ -17,10 +17,10 @@ export const authService = {
 
     async register(payload) {
         try {
-            await axios.post(`${API_URL}/register`, payload);
+            const response = await axios.post(`${API_URL}/auth/register`, payload);
+            return response.data; // { message, token, usuario }
         } catch (error) {
-            console.error('Error during registration:', error);
-            throw error;
+            throw error.response?.data?.message || "Error de red";
         }
     },
 

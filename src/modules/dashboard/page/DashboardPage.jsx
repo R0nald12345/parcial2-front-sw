@@ -4,10 +4,11 @@ import { FaEdit } from "react-icons/fa";
 import { dashboardService } from "../service/dashboardService";
 import ModalCrearProyecto from "../components/modal/ModalCrearProyecto";
 
-// ⚠️ Asegúrate de importar correctamente tu servicio:
-// import dashboardService from "../services/dashboardService"; // Ajusta la ruta según tu estructura
+import {useAuthStore} from '../../../store/authStore'
+import Swal from "sweetalert2";
 
-export default function DashboardPage() {
+
+const DashboardPage=()=> {
   const [vista, setVista] = useState("mios");
   const [proyectos, setProyectos] = useState({ administrador: [], invitado: [] });
   const [loading, setLoading] = useState(true);
@@ -15,12 +16,16 @@ export default function DashboardPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
 
+  const token = useAuthStore(state => state.token);
+
+  console.log('TOKEN', token);
 
   useEffect(() => {
     const fetchProyectos = async () => {
       try {
-        const data = await dashboardService.getProyectos(); // Debe retornar { administrador: [...], invitado: [...] }
+        const data = await dashboardService.getProyectos(token); // Debe retornar { administrador: [...], invitado: [...] }
         setProyectos(data);
+        console.log('proyectossss', data)
       } catch (err) {
         console.error(err);
         setError("Error al cargar los proyectos");
@@ -28,13 +33,46 @@ export default function DashboardPage() {
         setLoading(false);
       }
     };
-    fetchProyectos();
-  }, []);
+    if (token) fetchProyectos();
+  }, [token]);
 
   if (loading) return <div className="text-white p-6">Cargando proyectos...</div>;
   if (error) return <div className="text-red-500 p-6">{error}</div>;
 
   const proyectosMostrados = vista === "mios" ? proyectos.administrador : proyectos.invitado;
+
+  // Función para eliminar proyecto
+  const handleDeleteProyecto = async (id) => {
+    const confirm = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción eliminará el proyecto permanentemente.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (confirm.isConfirmed) {
+      try {
+        await dashboardService.deleteProyecto(id, token);
+        setProyectos((prev) => ({
+          ...prev,
+          administrador: prev.administrador.filter((p) => p.id !== id),
+        }));
+        Swal.fire({
+          icon: "success",
+          title: "Eliminado",
+          text: "Proyecto eliminado exitosamente",
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: error,
+        });
+      }
+    }
+  };
 
   return (
     <>
@@ -44,6 +82,7 @@ export default function DashboardPage() {
         onClose={() => setModalOpen(false)}
         proyectos={proyectos}
         setProyectos={setProyectos}
+        token={token}
       />
 
       <div className="min-h-screen bg-gray-900 text-white p-6">
@@ -78,14 +117,21 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-3 gap-6">
           {proyectosMostrados.map((proyecto, idx) => (
             <div
-              key={idx}
+              key={proyecto.id || idx}
               className="bg-gray-800 p-4 rounded-2xl shadow hover:shadow-lg transition"
             >
               <div className="text-xl font-semibold mb-2 flex justify-between items-center">
                 <div>{proyecto.nombre}</div>
                 <div className="flex space-x-2">
-                  <MdDelete className="bg-red-700 hover:bg-red-900 text-2xl rounded-md p-1 cursor-pointer" />
-                  <FaEdit className="bg-blue-700 hover:bg-blue-900 text-2xl rounded-md p-1 cursor-pointer" />
+                  <MdDelete
+                    className="bg-red-700 hover:bg-red-900 text-2xl rounded-md p-1 cursor-pointer"
+                    onClick={() => handleDeleteProyecto(proyecto.id)}
+                  />
+
+                  <FaEdit
+                     className="bg-blue-700 hover:bg-blue-900 text-2xl rounded-md p-1 cursor-pointer" 
+
+                  />
                 </div>
               </div>
               <div className="text-sm text-gray-400">Editado {proyecto.editado}</div>
@@ -98,3 +144,5 @@ export default function DashboardPage() {
 
   );
 }
+
+export default DashboardPage;

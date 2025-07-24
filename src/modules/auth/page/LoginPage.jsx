@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { authService } from "../service/authService";
-import { useAuthStore } from "../store/authStore";
+import { useAuthStore } from "../../../store/authStore";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -105,7 +105,7 @@ const LoginPage = () => {
                   <button
                     type="button"
                     className="font-mplus-bold bg-green-700 text-white py-2 px-4 rounded hover:bg-green-800 w-full cursor-pointer"
-                    onClick={() => navigate("/register")}
+                    onClick={() => navigate("/auth/registro")}
                   >
                     Registrarse
                   </button>

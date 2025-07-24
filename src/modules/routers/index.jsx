@@ -19,7 +19,8 @@ const AppRoutes = () => {
                 <Routes>
 
                     {/* Rutas públicas */}
-                    <Route element={<PublicRoute />}>
+                    <Route 
+                        element={<PublicRoute />}>
                         <Route path="/auth/*" element={<AuthRoutes />} />
                     </Route>
 

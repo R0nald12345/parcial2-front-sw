@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { dashboardService } from '../../service/dashboardService'; // Ajusta según tu estructura
 import Swal from 'sweetalert2';
 
-const ModalCrearProyecto = ({ open, onClose, proyectos, setProyectos }) => {
+const ModalCrearProyecto = ({ open, onClose, proyectos, setProyectos, token }) => {
     const [nombre, setNombre] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -21,36 +21,32 @@ const ModalCrearProyecto = ({ open, onClose, proyectos, setProyectos }) => {
 
             const payload = {
                 nombre,
-                descripcion,
-                permisosenlace: 'lectura', // ✅ Añadido explícitamente
+                descripcion
             };
 
-            // Enviar a la API usando dashboardService
-            const nuevoProyecto = await dashboardService.createProyecto(payload);
+            // Enviar a la API usando dashboardService, pasando el token
+            const res = await dashboardService.createProyecto(payload, token);
 
             // Actualizar proyectos localmente (asumiendo que lo añade como "míos")
             setProyectos((prev) => ({
                 ...prev,
-                administrador: [...prev.administrador, nuevoProyecto],
+                administrador: [...prev.administrador, res.proyecto],
             }));
 
-              // alert('Proyecto creado correctamente');
-             Swal.fire({
+            Swal.fire({
                 icon: 'success',
                 title: 'Proyecto Creado',
-                text: 'El proyecto ha sido creado correctamente',
+                text: res.message || 'El proyecto ha sido creado correctamente',
             });
             // Resetear estado y cerrar modal
             setNombre('');
             setDescripcion('');
             onClose();
-
-          
         } catch (error) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error al crear proyecto',
-                text: 'Ha ocurrido un error al crear el proyecto',
+                text: error || 'Ha ocurrido un error al crear el proyecto',
             });
             console.error(error);
         } finally {
